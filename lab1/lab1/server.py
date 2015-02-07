@@ -133,19 +133,15 @@ class Request(threading.Thread):
 
         req = json.loads(request)
 
-        try:
-            print(req)
-            print(type(req))
+        try: 
+            #find the function the client wants and return its result
             str_method = req['method']
-            print(str_method)
             req_method = getattr(self.db_server, str_method)
-            print(req_method)
             args = req["args"]
-            print(args)
             result = req_method(*args)
-            print(result)
             return json.dumps({"result":result})
-        except Exception as e:
+        except Exception as e: 
+            #catch any exception and build a json of it to send back to the client
             return json.dumps({"error": {"name": type(e).__name__, "args":e.args}})
 
 

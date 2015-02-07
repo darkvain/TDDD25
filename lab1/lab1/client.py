@@ -77,8 +77,6 @@ class DatabaseProxy(object):
         result = json.loads(conn.readline())
         conn.close()
 
-        #print(result)
-
         if "error" in result:
             # #there has been an exception on the server,
             # #find out which and raise it here on the client
@@ -89,6 +87,7 @@ class DatabaseProxy(object):
                 raise exc(*err["args"])
             else:
                 print("lol wtf") #If it was not one of the builtins,, which one do we raise??
+                raise CommunicationError(*err["args"])
 
         return result["result"]
     
@@ -105,7 +104,7 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
-        self.request({"methodaa":"write", "args":[fortune]})
+        self.request({"method":"write", "args":[fortune]})
 
     def costum(self, msg):
         self.request(msg)
