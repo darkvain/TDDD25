@@ -81,13 +81,10 @@ class DatabaseProxy(object):
             # #there has been an exception on the server,
             # #find out which and raise it here on the client
             err = result["error"]
-            exc = getattr(builtins, err["name"], None)
+            exc = getattr(globals(), err["name"], None)
 
             if exc is not None:
                 raise exc(*err["args"])
-            else:
-                print("lol wtf") #If it was not one of the builtins,, which one do we raise??
-                raise CommunicationError(*err["args"])
 
         return result["result"]
     

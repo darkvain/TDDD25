@@ -65,7 +65,7 @@ class Stub(object):
         print("send message..")
         print(data)
         
-        conn.write(json.dumps(data) + '\n')
+        conn.write(data)
         conn.flush()
 
         print("fetch reply..")
@@ -117,11 +117,19 @@ class Request(threading.Thread):
             w = self.conn.makefile(mode="rw")
             req = json.loads(w.readline())
         
+            print("received some request:")
+            print(req)
+
+
             #get the corresponding method of the owner
             method = getattr(self.owner,req["method"])
             
             #invoke the method and send the result
             ret = method(req["args"])
+
+            print("served request with result:")
+            print(ret)
+
             w.write(json.dumps({"result":ret}) + '\n')
             w.flush()
         except Exception as e:
@@ -165,6 +173,7 @@ class Skeleton(threading.Thread):
         while True:
             try:
                 conn,addr = self.server.accept()
+                print("skeleton accepted connection")
                 req = Request(self.owner,conn,addr)
                 req.start()
             except socket.error:
