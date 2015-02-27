@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "./peer.py", line 88, in <module>
+    p = Client(local_address, name_service_address, client_type)
+  File "./peer.py", line 66, in __init__
+    orb.Peer.start(self)
+  File "../modules/Common/orb.py", line 224, in start
+    self.address)
+  File "../modules/Common/orb.py", line 99, in rmi_call
+    return self._rmi(attr, *args)
+  File "../modules/Common/orb.py", line 78, in _rmi
+    res = json.loads(conn.readline())
+  File "/usr/lib/python3.4/socket.py", line 371, in readinto
+    return self._sock.recv_into(b)
+KeyboardInterrupt
