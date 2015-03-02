@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "./mutexPeer.py", line 146, in <module>
+    p.destroy()
+  File "./mutexPeer.py", line 81, in destroy
+    self.distributed_lock.destroy()
+  File "../modules/Server/Lock/distributedLock.py", line 124, in destroy
+    peerid = self.peer_list.peer(0) #get the first peer in que
+  File "../modules/Server/peerList.py", line 109, in peer
+    return self.peers[pid]
+KeyError: 0
