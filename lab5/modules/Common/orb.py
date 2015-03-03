@@ -16,7 +16,7 @@ import json
 This module implements the infrastructure needed to transparently create
 objects that communicate via networks. This infrastructure consists of:
 
---  Strub ::
+--  Stub ::
         Represents the image of a remote object on the local machine.
         Used to connect to remote objects. Also called Proxy.
 --  Skeleton ::
@@ -30,7 +30,7 @@ objects that communicate via networks. This infrastructure consists of:
 """
 
 
-class ComunicationError(Exception):
+class CommunicationError(Exception):
     pass
 
 
@@ -49,7 +49,32 @@ class Stub(object):
         #
         # Your code here.
         #
-        pass
+
+        sock = socket.create_connection(self.address) #what if it cant connect?
+        conn = sock.makefile(mode="rw")
+        
+        # make our message and send it
+        data = json.dumps({"method":method,"args":args}) + '\n'
+        
+        conn.write(data)
+        conn.flush()
+
+        #read the reply and unpack it
+        res = json.loads(conn.readline())
+        conn.close()
+
+        if "error" in res:
+            # #there has been an exception on the server,
+            # #find out which and raise it here on the client
+            err = res["error"]
+            exc = getattr(globals(), err["name"], None)
+
+            if exc is not None:
+                raise exc(*err["args"])
+
+        return res.get("result")
+
+        #end my code
 
     def __getattr__(self, attr):
         """Forward call to name over the network at the given address."""
@@ -70,10 +95,32 @@ class Request(threading.Thread):
         self.daemon = True
 
     def run(self):
+
         #
         # Your code here.
-        #
-        pass
+
+        try:
+            w = self.conn.makefile(mode="rw")
+            req = json.loads(w.readline())
+
+
+            #get the corresponding method of the owner
+            method = getattr(self.owner,req["method"])
+            
+            #invoke the method and send the result
+            ret = method(*req["args"])
+
+            w.write(json.dumps({"result":ret}) + '\n')
+            w.flush()
+        except Exception as e:
+            w = self.conn.makefile(mode="rw")
+            w.write(json.dumps({"error":{"name":e.__class__.__name__,
+                                         "args":e.args}}) + '\n')
+            w.flush()
+        finally:
+            self.conn.close()
+
+        #end my code
 
 
 class Skeleton(threading.Thread):
@@ -92,14 +139,27 @@ class Skeleton(threading.Thread):
         self.daemon = True
         #
         # Your code here.
-        #
-        pass
+
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(self.address)
+        self.server.listen(1)
+
+        # end my code
 
     def run(self):
         #
         # Your code here.
-        #
-        pass
+        
+        while True:
+            try:
+                conn,addr = self.server.accept()
+                req = Request(self.owner,conn,addr)
+                req.start()
+            except socket.error:
+                continue
+
+        # end my code
+        
 
 
 class Peer:
@@ -150,8 +210,8 @@ class Peer:
 
     def destroy(self):
         """Unregister the object before removal."""
-
         self.name_service.unregister(self.id, self.type, self.hash)
+
 
     def check(self):
         """Checking to see if the object is still alive."""

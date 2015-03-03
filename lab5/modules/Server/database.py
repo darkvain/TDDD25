@@ -23,18 +23,32 @@ class Database(object):
         #
         # Your code here.
         #
-        pass
+        f = open(db_file, 'r')
+        self.db = f.read().split('%')
+        f.close()
+
+        #end my code    
 
     def read(self):
         """Read a random location in the database."""
         #
         # Your code here.
         #
-        pass
+        nr_entries = len(self.db)
+        rand_index = self.rand.randint(0, nr_entries-1)
+        return self.db[rand_index]
+
+        #end my code
 
     def write(self, fortune):
         """Write a new fortune to the database."""
         #
         # Your code here.
         #
-        pass
+        self.db.append(fortune)
+        f = open(self.db_file, 'a')
+        f.write(fortune + "\n%\n")
+        f.close()
+
+        #end my code
+
