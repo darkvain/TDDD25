@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "./serverPeer.py", line 212, in <module>
+    p.destroy()
+  File "./serverPeer.py", line 99, in destroy
+    self.peer_list.destroy()
+  File "../modules/Server/peerList.py", line 59, in destroy
+    peer.unregister_peer(self.owner.id)
+AttributeError: 'int' object has no attribute 'unregister_peer'

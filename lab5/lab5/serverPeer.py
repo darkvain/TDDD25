@@ -115,22 +115,35 @@ class Server(orb.Peer):
         #
         # Your code here.
         #
-        pass
+        self.drwlock.read_acquire()
+        try:
+            return self.db.read()
+        finally:
+            self.drwlock.read_release()
 
     def write(self, fortune):
         """Write a fortune to the database.
 
         Obtain the distributed lock and call all other servers to write
         the fortune as well. Call their 'write_local' as they cannot
-        atempt to obtain the distributed lock when writting their
+        atempt to obtain the distributed lock when writing their
         copies.
 
         """
 
+        self.drwlock.write_acquire()
+        try:
+            self.write_local(fortune)
+
+            for pid in self.peer_list.get_peers():
+                self.peer_list.peer(pid).write_local(fortune)
+        finally:
+            self.drwlock.write_release()
+            
         #
         # Your code here.
         #
-        pass
+            
 
     def write_local(self, fortune):
         """Write a fortune to the database.
