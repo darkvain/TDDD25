@@ -55,8 +55,8 @@ class PeerList(object):
 
         self.lock.acquire()
         try:
-            for peer in self.get_peers():
-                peer.unregister_peer(self.owner.id)
+            for pid in self.get_peers():
+                self.peer(pid).unregister_peer(self.owner.id)
 
         finally:
             self.lock.release()
