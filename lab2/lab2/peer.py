@@ -54,14 +54,12 @@ assert client_type != "object", "Change the object type to something unique!"
 # Auxiliary classes
 # -----------------------------------------------------------------------------
 
-
 class Client(orb.Peer):
 
     """Chat client class."""
 
     def __init__(self, local_address, ns_address, client_type):
         """Initialize the client."""
-        print("init ma peer\n")
         orb.Peer.__init__(self, local_address, ns_address, client_type)
         orb.Peer.start(self)
 
@@ -69,7 +67,6 @@ class Client(orb.Peer):
 
     def destroy(self):
         """Destroy the peer object."""
-        print("omg destroy me")
         orb.Peer.destroy(self)
 
     def display_peers(self):
@@ -97,8 +94,6 @@ p.display_peers()
 # Waiting for a key press.
 sys.stdout.write("Waiting for a key press...")
 input()
-
-print("lol pressed btn")
 
 # Kill our peer object.
 p.destroy()
