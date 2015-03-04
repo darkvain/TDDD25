@@ -124,8 +124,9 @@ class DistributedLock(object):
         try:
             if(self.state == TOKEN_PRESENT or self.state == TOKEN_HELD):
                 if not self.release():
-                    peerid = self.peer_list.peer(0)
-                    self.peer_list.peer(peerid).obtain_token()
+                    for pid in self.peer_list.get_peers():
+                        self.peer_list.peer(pid).obtain_token(self._prepare(self.token))
+                        break
         finally:
             self.peer_list.lock.release()
 
@@ -173,10 +174,12 @@ class DistributedLock(object):
 
         for pid in self.peer_list.get_peers():
             self.peer_list.peer(pid).request_token(self.time, self.owner.id)
+            
+        print("wait for the flag")
+        self.wait_event.wait()
+        print("clear the flag")
+        self.wait_event.clear()
 
-        self.wait_event().clear()
-        self.wait_event().wait()
-        
         self.state = TOKEN_HELD
         print("Got the token!")
 
@@ -264,8 +267,9 @@ class DistributedLock(object):
         self.token = self._unprepare(token)
         self.token[self.owner.id] = self.time
         self.state = TOKEN_PRESENT
-        self.wait_event().set()
-        
+        print("set the flag")
+        self.wait_event.set()
+        print("the flag has been set")
         #end my code
 
     def display_status(self):
