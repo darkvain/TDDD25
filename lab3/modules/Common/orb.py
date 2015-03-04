@@ -50,31 +50,18 @@ class Stub(object):
         # Your code here.
         #
 
-        print("_rmi: " + method + " ")
-        for arg in args:
-            print(arg)
-
-        print("connecting..")
-
         sock = socket.create_connection(self.address) #what if it cant connect?
         conn = sock.makefile(mode="rw")
         
         # make our message and send it
         data = json.dumps({"method":method,"args":args}) + '\n'
         
-        print("send message..")
-        print(data)
-        
         conn.write(data)
         conn.flush()
-
-        print("fetch reply..")
 
         #read the reply and unpack it
         res = json.loads(conn.readline())
         conn.close()
-
-        print(res)
 
         if "error" in res:
             # #there has been an exception on the server,
@@ -115,9 +102,6 @@ class Request(threading.Thread):
         try:
             w = self.conn.makefile(mode="rw")
             req = json.loads(w.readline())
-        
-            print("received some request:")
-            print(req)
 
 
             #get the corresponding method of the owner
@@ -125,9 +109,6 @@ class Request(threading.Thread):
             
             #invoke the method and send the result
             ret = method(*req["args"])
-
-            print("served request with result:")
-            print(ret)
 
             w.write(json.dumps({"result":ret}) + '\n')
             w.flush()
@@ -172,15 +153,12 @@ class Skeleton(threading.Thread):
         while True:
             try:
                 conn,addr = self.server.accept()
-                print("skeleton accepted connection")
                 req = Request(self.owner,conn,addr)
                 req.start()
             except socket.error:
                 continue
 
         # end my code
-        
-
 
 class Peer:
 
@@ -230,9 +208,7 @@ class Peer:
 
     def destroy(self):
         """Unregister the object before removal."""
-        print("unreg me")
         self.name_service.unregister(self.id, self.type, self.hash)
-        print("done unregging")
 
     def check(self):
         """Checking to see if the object is still alive."""
