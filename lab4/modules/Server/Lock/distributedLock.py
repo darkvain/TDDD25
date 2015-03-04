@@ -97,7 +97,9 @@ class DistributedLock(object):
 
         self.peer_list.lock.acquire()
         try:
-            if len(self.peer_list.get_peers()) == 0:
+            peers = sorted(self.peer_list.peers.keys())
+
+            if len(peers) == 0 or peers[0] > self.owner.id:
                 self.token = {}
                 self.token[self.owner.id] = 0
                 self.state = TOKEN_PRESENT
@@ -135,13 +137,16 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-
-        print("register: ", pid)
-        if self.token:
-            self.token[pid] = 0
+        self.peer_list.lock.acquire()
+        try:
+            print("register: ", pid)
+            if self.token:
+                self.token[pid] = 0
         
-        self.request[pid] = 0
+            self.request[pid] = 0
 
+        finally:
+            self.peer_list.lock.release()
         #end my code
 
     def unregister_peer(self, pid):
@@ -164,24 +169,37 @@ class DistributedLock(object):
         #
         # Your code here.
         #
+
+        self.peer_list.lock.acquire()
+        try:
+            self.time = self.time + 1
         
-        self.time = self.time + 1
-        
-        if self.state == TOKEN_PRESENT:
-            #we already have the token so no need to request it
-            self.state = TOKEN_HELD
-            return
+            if self.state == TOKEN_PRESENT:
+                #we already have the token so no need to request it
+                self.state = TOKEN_HELD
+                return
+
+        finally:
+            self.peer_list.lock.release()
 
         for pid in self.peer_list.get_peers():
             self.peer_list.peer(pid).request_token(self.time, self.owner.id)
-            
-        print("wait for the flag")
-        self.wait_event.wait()
-        print("clear the flag")
-        self.wait_event.clear()
 
-        self.state = TOKEN_HELD
-        print("Got the token!")
+        #print("wait for the flag")
+        #self.wait_event.wait()
+        #print("clear the flag")
+        #self.wait_event.clear()
+
+        print("waiting for token...")
+        while self.state == NO_TOKEN:
+            pass
+
+        self.peer_list.lock.acquire()
+        try:
+            self.state = TOKEN_HELD
+            print("Got the token!")
+        finally:
+            self.peer_list.lock.release()
 
     def release(self):
         """Called when this object releases the lock."""
@@ -190,9 +208,10 @@ class DistributedLock(object):
         # Your code here.
         #
 
+        
+
         self.peer_list.lock.acquire()
         try:
-
             #this is a rather complicated way of
             #finding the next process to obtain the
             #token
@@ -223,10 +242,15 @@ class DistributedLock(object):
                     #the peer has a pending request for the token,
                     #send the token to the waiting peer
 
+                    self.peer_list.lock.release()
+
                     #what happens if the peer we decide to give the token to has left?
                     self.peer_list.peer(pid).obtain_token(self._prepare(self.token))
+            
+                    self.peer_list.lock.acquire()
                     self.state = NO_TOKEN
                     self.token = None
+
                     return True
                 
                 i = (i + 1) % req_len
@@ -263,13 +287,17 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        
-        self.token = self._unprepare(token)
-        self.token[self.owner.id] = self.time
-        self.state = TOKEN_PRESENT
-        print("set the flag")
-        self.wait_event.set()
-        print("the flag has been set")
+
+        self.peer_list.lock.acquire()
+        try:
+            self.token = self._unprepare(token)
+            self.token[self.owner.id] = self.time
+            self.state = TOKEN_PRESENT
+            print("set the flag")
+            #self.wait_event.set()
+            print("the flag has been set")
+        finally:
+            self.peer_list.lock.release()
         #end my code
 
     def display_status(self):
