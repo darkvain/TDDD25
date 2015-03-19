@@ -44,6 +44,10 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         write_acquire_local()
         self.distributed_lock.acquire()
+<<<<<<< HEAD
+=======
+        write_release_local()
+>>>>>>> f834651b6c846f65d20a5195924f5da20447b142
 
     def write_release(self):
         """Release the rights to write into the database.
@@ -58,6 +62,10 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         write_acquire_local()
         self.distributed_lock.release()
+<<<<<<< HEAD
+=======
+        write_release_local()
+>>>>>>> f834651b6c846f65d20a5195924f5da20447b142
 
     def write_acquire_local(self):
         readWriteLock.ReadWriteLock.write_acquire(self)
