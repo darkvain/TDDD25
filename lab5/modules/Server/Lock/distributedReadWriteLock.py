@@ -56,8 +56,8 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         # Your code here.
         #
-        write_acquire_local()
         self.distributed_lock.release()
+		write_release_local()
 
     def write_acquire_local(self):
         readWriteLock.ReadWriteLock.write_acquire(self)
