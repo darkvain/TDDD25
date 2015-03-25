@@ -130,7 +130,6 @@ class Server(orb.Peer):
         copies.
 
         """
-
         self.drwlock.write_acquire()
         try:
             #self.write_local(fortune) #with this we dont need to take the local lock in write_acquire()?

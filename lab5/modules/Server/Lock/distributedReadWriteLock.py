@@ -24,8 +24,7 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         # Your code here.
         #
-        self.lock_of_locks = ReadWriteLock()
-        pass
+        self.lock_of_locks = threading.Lock()
 
     # Public methods
 
@@ -40,12 +39,11 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         # Your code here.
         #
+
+        
         self.lock_of_locks.acquire()
-
         self.distributed_lock.acquire()
-
         self.write_acquire_local()
-
         
 
     def write_release(self):
