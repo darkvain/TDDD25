@@ -133,7 +133,8 @@ class Server(orb.Peer):
 
         self.drwlock.write_acquire()
         try:
-            self.write_local(fortune)
+            #self.write_local(fortune) #with this we dont need to take the local lock in write_acquire()?
+            self.db.write(fortune) #but now we most definatley do
 
             for pid in self.peer_list.get_peers():
                 self.peer_list.peer(pid).write_local(fortune)
