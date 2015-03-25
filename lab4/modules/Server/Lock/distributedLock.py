@@ -99,6 +99,7 @@ class DistributedLock(object):
         try:
             peers = sorted(self.peer_list.peers.keys())
 
+            # If I'm alone, or have the smallest id I get to start with the token
             if len(peers) == 0 or peers[0] > self.owner.id:
                 self.token = {}
                 self.token[self.owner.id] = 0
@@ -124,8 +125,13 @@ class DistributedLock(object):
         # Your code here.
         self.peer_list.lock.acquire()
         try:
+            #if I have the token I must give it to someone else
             if(self.state == TOKEN_PRESENT or self.state == TOKEN_HELD):
+                
+                #try to release
                 if not self.release():
+                    #If nobody wanted the token, send it to the whoever is first in the peer list
+                    #( in a rather awkward way I might add )
                     for pid in self.peer_list.get_peers():
                         self.peer_list.peer(pid).obtain_token(self._prepare(self.token))
                         break
@@ -191,6 +197,7 @@ class DistributedLock(object):
         #self.wait_event.clear()
 
         print("waiting for token...")
+        #TODO: use something better than a spinlock
         while self.state == NO_TOKEN:
             pass
 
@@ -293,9 +300,9 @@ class DistributedLock(object):
             self.token = self._unprepare(token)
             self.token[self.owner.id] = self.time
             self.state = TOKEN_PRESENT
-            print("set the flag")
+            #print("set the flag")
             #self.wait_event.set()
-            print("the flag has been set")
+            #print("the flag has been set")
         finally:
             self.peer_list.lock.release()
         #end my code
